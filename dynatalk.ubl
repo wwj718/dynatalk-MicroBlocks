@@ -43,7 +43,7 @@ to '_MessageLoop' {
         'MQTT connect to' (at 1 _mqtt_conf) (at 2 _mqtt_conf) ('[data:join]' 'MicroBlocksClient-' (random 1 100000000)) (at 3 _mqtt_conf) (at 4 _mqtt_conf)
         comment 'subscribe topic: MicroBlocksAgent'
         waitMillis 500
-        'MQTT sub' '+'
+        'MQTT sub' ('_agentName')
       }
     }
   }
