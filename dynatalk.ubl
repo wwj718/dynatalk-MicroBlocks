@@ -62,7 +62,7 @@ to '_debugging' {
 }
 
 to '_generateMessage' parentID to actionName actionArgs {
-  return ('[data:join]' '{"meta": {"id": "' 'MicroBlocks-' (random 0 100000000) '"' (ifExpression (parentID == '') '' ('[data:join]' ',"parent_id":"' parentID '"')) '},"to": "' to '","action": {"name": "' actionName '","args":' actionArgs '},"from": "' ('_agentName') '"}')
+  return ('[data:join]' '{"meta": {"id": "' ('_agentName') '-' (random 0 100000000) '"' (ifExpression (parentID == '') '' ('[data:join]' ',"parent_id":"' parentID '"')) '},"to": "' to '","action": {"name": "' actionName '","args":' actionArgs '},"from": "' ('_agentName') '"}')
 }
 
 to '_interpret' aMessage {
