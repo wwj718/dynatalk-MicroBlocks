@@ -32,7 +32,7 @@ to '_MessageLoop' {
       event = ('[net:MQTTLastEvent]')
       if (isType event 'list') {
         if ('_debugging') {sayIt 'topic' ('MQTT event topic' event) ', payload' ('MQTT event payload' event)}
-        if (('[misc:jsonGet]' ('MQTT event payload' event) 'to') == ('_agentName')) {'_interpret' ('MQTT event payload' event)}
+        if (('[data:find]' ('[misc:jsonGet]' ('MQTT event payload' event) 'to') ('[data:makeList]' '[broadcast]' ('_agentName'))) != -1) {'_interpret' ('MQTT event payload' event)}
       }
     } else {
       sayIt 'connect to mqtt broker ...'
@@ -46,6 +46,7 @@ to '_MessageLoop' {
         comment 'subscribe topic: MicroBlocksAgent'
         waitMillis 500
         'MQTT sub' ('_agentName')
+        'MQTT sub' '[broadcast]'
       }
     }
   }
