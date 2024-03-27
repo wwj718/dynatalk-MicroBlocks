@@ -1,6 +1,6 @@
 module dynatalk Comm
 author wwj718
-version 0 5 
+version 0 6 
 depends MQTT 
 description ''
 variables event _mqtt_conf 
@@ -13,7 +13,7 @@ variables event _mqtt_conf
   spec 'r' 'functions' 'actions'
   spec ' ' '_interpret' '_interpret _' 'auto' 'aMessage'
   spec ' ' '_send' '_send _' 'auto' 'aMessage'
-  spec ' ' 'responseWith' 'responseWith _' 'auto' 'aNumberOrAString'
+  spec ' ' 'respondWith' 'respondWith _' 'auto' 'aNumberOrAString'
   spec ' ' 'raiseWith' 'raiseWith _' 'auto' 'aString'
   spec 'r' '_generateMessage' '_generateMessage parentID _ to _ actionName _ actionArgs _' 'auto auto auto auto' '' 'User' 'aString' '{"value":10}'
   spec ' ' '_mock' '_mock'
@@ -21,6 +21,8 @@ variables event _mqtt_conf
   spec ' ' '_debugLog' '_debugLog _' 'auto' 'aString'
   spec 'r' '_debugging' '_debugging'
   spec 'r' '_agentName' '_agentName'
+  spec ' ' 'ping' 'ping'
+  spec ' ' 'help' 'help'
 
 to '_MessageLoop' {
   comment 'receive mqtt message'
@@ -88,7 +90,7 @@ to '_interpret' aMessage {
     '_process_promises' aMessage
   } (action == '[error]') {
     '_process_promises' aMessage
-  } (('[data:find]' action (functions)) != -1) {
+  } (or (('[data:find]' action (functions)) != -1) (('[data:find]' action ('[data:makeList]' 'ping' 'help')) != -1)) {
     callCustomCommand action args
   } else {
     raiseWith ('[data:join]' 'Message Not Understood: ' 'MicroBlocksAgent' '>>' action)
@@ -137,6 +139,24 @@ to functions {
   return ('[data:makeList]' 'echo' 'add')
 }
 
+to help {
+  local 'help' '{
+  "echo": {
+    "description": "echo the content",
+    "args": ["aString"]
+  },
+  "add": {
+    "description": "add a and b",
+    "args": ["aNumber","aNumber"]
+  }
+}'
+  respondWith ('[data:join]' '{"help":' help '}')
+}
+
+to ping {
+  respondWith 'pong'
+}
+
 to raiseWith error {
   '_send' ('_generateMessage' ('[misc:jsonGet]' _currentMessage 'meta.id') ('[misc:jsonGet]' _currentMessage 'from') '[error]' ('[data:join]' '{"error": ' (ifExpression (isType error 'number') value ('[data:join]' '"' error '"')) '}'))
 }
@@ -159,8 +179,8 @@ to request agent action args timeout {
   }
 }
 
-to responseWith value {
-  '_send' ('_generateMessage' ('[misc:jsonGet]' _currentMessage 'meta.id') ('[misc:jsonGet]' _currentMessage 'from') '[response]' ('[data:join]' '{"value": ' (ifExpression (isType value 'number') value ('[data:join]' '"' value '"')) '}'))
+to respondWith value {
+  '_send' ('_generateMessage' ('[misc:jsonGet]' _currentMessage 'meta.id') ('[misc:jsonGet]' _currentMessage 'from') '[response]' ('[data:join]' '{"value":' (ifExpression (or (isType value 'number') (('[data:find]' '{' value) != -1)) value ('[data:join]' '"' value '"')) '}'))
 }
 
 to sendTo agent action args {

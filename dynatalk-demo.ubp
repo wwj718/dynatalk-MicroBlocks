@@ -8,14 +8,14 @@ variables _currentMessage _fakePromises _debuglog
   spec ' ' 'add' 'add _ _' 'auto auto' 1 2
 
 to add a b {
-  responseWith (a + b)
+  respondWith (a + b)
 }
 
 to echo content {
-  responseWith content
+  respondWith content
 }
 
-script 46 33 {
+script 46 46 {
 whenStarted
 comment '1. connect wifi'
 wifiConnect 'Network_Name' ''
@@ -23,21 +23,21 @@ wifiConnect 'Network_Name' ''
 start
 }
 
-script 50 224 {
+script 50 237 {
 to echo {}
 }
 
-script 362 225 {
+script 328 249 {
 to functions {}
 }
 
-script 48 358 {
+script 48 371 {
 to add {}
 }
 
-script 308 377 (request 'MicroBlocksAgent' 'echo' '["hi"]' 3000)
+script 296 405 (request 'MicroBlocksAgent' 'echo' '["hi"]' 3000)
 
-script 302 434 (request 'MicroBlocksAgent' 'add' '[1, 2]' 3000)
+script 302 447 (request 'MicroBlocksAgent' 'add' '[1, 2]' 3000)
 
 
 module MQTT Comm
@@ -221,7 +221,7 @@ to wifiCreateHotspot ssid password {
 
 module dynatalk Comm
 author wwj718
-version 0 5 
+version 0 6 
 depends MQTT 
 description ''
 variables event _mqtt_conf 
@@ -234,7 +234,7 @@ variables event _mqtt_conf
   spec 'r' 'functions' 'actions'
   spec ' ' '_interpret' '_interpret _' 'auto' 'aMessage'
   spec ' ' '_send' '_send _' 'auto' 'aMessage'
-  spec ' ' 'responseWith' 'responseWith _' 'auto' 'aNumberOrAString'
+  spec ' ' 'respondWith' 'respondWith _' 'auto' 'aNumberOrAString'
   spec ' ' 'raiseWith' 'raiseWith _' 'auto' 'aString'
   spec 'r' '_generateMessage' '_generateMessage parentID _ to _ actionName _ actionArgs _' 'auto auto auto auto' '' 'User' 'aString' '{"value":10}'
   spec ' ' '_mock' '_mock'
@@ -242,6 +242,8 @@ variables event _mqtt_conf
   spec ' ' '_debugLog' '_debugLog _' 'auto' 'aString'
   spec 'r' '_debugging' '_debugging'
   spec 'r' '_agentName' '_agentName'
+  spec ' ' 'ping' 'ping'
+  spec ' ' 'help' 'help'
 
 to '_MessageLoop' {
   comment 'receive mqtt message'
@@ -309,7 +311,7 @@ to '_interpret' aMessage {
     '_process_promises' aMessage
   } (action == '[error]') {
     '_process_promises' aMessage
-  } (('[data:find]' action (functions)) != -1) {
+  } (or (('[data:find]' action (functions)) != -1) (('[data:find]' action ('[data:makeList]' 'ping' 'help')) != -1)) {
     callCustomCommand action args
   } else {
     raiseWith ('[data:join]' 'Message Not Understood: ' 'MicroBlocksAgent' '>>' action)
@@ -358,6 +360,24 @@ to functions {
   return ('[data:makeList]' 'echo' 'add')
 }
 
+to help {
+  local 'help' '{
+  "echo": {
+    "description": "echo the content",
+    "args": ["aString"]
+  },
+  "add": {
+    "description": "add a and b",
+    "args": ["aNumber","aNumber"]
+  }
+}'
+  respondWith ('[data:join]' '{"help":' help '}')
+}
+
+to ping {
+  respondWith 'pong'
+}
+
 to raiseWith error {
   '_send' ('_generateMessage' ('[misc:jsonGet]' _currentMessage 'meta.id') ('[misc:jsonGet]' _currentMessage 'from') '[error]' ('[data:join]' '{"error": ' (ifExpression (isType error 'number') value ('[data:join]' '"' error '"')) '}'))
 }
@@ -380,8 +400,8 @@ to request agent action args timeout {
   }
 }
 
-to responseWith value {
-  '_send' ('_generateMessage' ('[misc:jsonGet]' _currentMessage 'meta.id') ('[misc:jsonGet]' _currentMessage 'from') '[response]' ('[data:join]' '{"value": ' (ifExpression (isType value 'number') value ('[data:join]' '"' value '"')) '}'))
+to respondWith value {
+  '_send' ('_generateMessage' ('[misc:jsonGet]' _currentMessage 'meta.id') ('[misc:jsonGet]' _currentMessage 'from') '[response]' ('[data:join]' '{"value":' (ifExpression (or (isType value 'number') (('[data:find]' '{' value) != -1)) value ('[data:join]' '"' value '"')) '}'))
 }
 
 to sendTo agent action args {
