@@ -8,8 +8,9 @@ variables event _mqtt_conf
   spec ' ' 'start' 'start and loop'
   spec ' ' 'set mqtt broker' 'set mqtt broker _ buffer sizes _ username _ password _' 'auto auto auto auto' '192.168.1.3' 512 'guest' 'test'
   spec ' ' '_MessageLoop' '_MessageLoop'
-  spec 'r' 'request' 'request _ action _ args _ timeout _ ms' 'auto auto auto auto' 'PyDemoAgent' 'echo' '{"content":"hi"}' 3000
-  spec ' ' 'sendTo' 'sendTo _ action _ args _' 'auto auto auto' 'PyDemoAgent' 'echo' '{"content":"hi"}'
+  spec 'r' 'request' 'request _ action _ args _ timeout _ ms' 'auto auto auto auto' 'PyDemoAgent' 'echo' '["hi"]' 3000
+  spec ' ' 'sendTo' 'sendTo _ action _ args _' 'auto auto auto' 'PyDemoAgent' 'echo' '["hi"]'
+  spec ' ' 'broadcast' 'broadcast _ args _' 'auto auto' 'echo' '["hi"]'
   spec 'r' 'functions' 'actions'
   spec ' ' '_interpret' '_interpret _' 'auto' 'aMessage'
   spec ' ' '_send' '_send _' 'auto' 'aMessage'
@@ -21,7 +22,7 @@ variables event _mqtt_conf
   spec ' ' '_debugLog' '_debugLog _' 'auto' 'aString'
   spec 'r' '_debugging' '_debugging'
   spec 'r' '_agentName' '_agentName'
-  spec ' ' 'ping' 'ping'
+  spec ' ' '_ping' '_ping'
   spec ' ' 'help' 'help'
 
 to '_MessageLoop' {
@@ -91,7 +92,7 @@ to '_interpret' aMessage {
     '_process_promises' aMessage
   } (action == '[error]') {
     '_process_promises' aMessage
-  } (or (('[data:find]' action (functions)) != -1) (('[data:find]' action ('[data:makeList]' 'ping' 'help')) != -1)) {
+  } (or (('[data:find]' action (functions)) != -1) (('[data:find]' action ('[data:makeList]' '_ping' 'help')) != -1)) {
     callCustomCommand action args
   } else {
     raiseWith ('[data:join]' 'Message Not Understood: ' 'MicroBlocksAgent' '>>' action)
@@ -110,6 +111,10 @@ to '_mock' {
     "args": ["hi"]
   }
 }'
+}
+
+to '_ping' {
+  respondWith 'pong'
 }
 
 to '_process_promises' aMessage {
@@ -135,6 +140,10 @@ to '_send' aMessage {
   if ('MQTT connected') {'MQTT pub' ('[misc:jsonGet]' aMessage 'to') aMessage}
 }
 
+to broadcast actionName args {
+  sendTo '[broadcast]' actionName args
+}
+
 to functions {
   comment 'Exposed functions'
   return ('[data:makeList]' 'echo' 'add')
@@ -152,10 +161,6 @@ to help {
   }
 }'
   respondWith ('[data:join]' '{"help":' help '}')
-}
-
-to ping {
-  respondWith 'pong'
 }
 
 to raiseWith error {
