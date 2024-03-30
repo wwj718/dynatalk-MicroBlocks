@@ -4,12 +4,17 @@
 
 > Dynatalk 致力于对象之间的交流, 尤其关心不同语言/环境之间的互操作。 -- [Dynatalk](https://github.com/wwj718/Dynatalk)
 
-要使用 Dynatalk, 需要做两件事:
-
-1. [运行一个 MQTT broker](https://github.com/wwj718/Dynatalk/blob/main/mqtt/readme.md)
-2. 然后当前语言的 dynatalk 客户端中开始编程。
-
 
 ## 开始
 
+1. 运行一个 MQTT broker
+    -   下载并运行 DynatalkHub
+        -   [MacOS](https://scratch3-files.just4fun.site/DynatalkHub-0.1.0.zip)
+        -   [Windows](https://scratch3-files.just4fun.site/DynatalkHub-0.1.0-win.zip)
+        -   [Linux](https://github.com/wwj718/Dynatalk/tree/main/mqtt)
+2. [打开例子](https://microblocksfun.cn/run/microblocks.html?#project=https://wwj718.github.io/post/img/dynatalk-demo-20240330.ubp), 开始编程。
+
+
+<!--
 在 [MicroBlocks](https://microblocksfun.cn/run) 中打开 `dynatalk-demo.ubp`
+-->
